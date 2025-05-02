@@ -3,11 +3,28 @@ package client
 import (
 	"bancho-kill/packets"
 	"bytes"
+	"context"
 	"fmt"
+	"time"
 )
 
-func (client *OsuClient) MaintainClient() {
+func (client *OsuClient) MaintainClient(ctx context.Context) {
+	var httpPollTicker *time.Ticker
 
+	if client.kind == ClientKindHttp {
+		httpPollTicker = time.NewTicker(client.PacketPollRate * time.Millisecond)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			if httpPollTicker != nil {
+				httpPollTicker.Stop()
+			}
+		case <-httpPollTicker.C:
+
+		}
+	}
 }
 
 func (client *OsuClient) ReceiveData(data []byte) {
@@ -26,6 +43,7 @@ func (client *OsuClient) ReceiveData(data []byte) {
 		crossVersionPacket := client.PacketReaderMiddleware.Process(readPacket)
 
 		client.PacketIncomingQueue <- crossVersionPacket
+		client.PacketHistory = append(client.PacketHistory, crossVersionPacket)
 
 		fmt.Printf("%s\n", packets.GetPacketName(readPacket.PacketId))
 	}

@@ -138,11 +138,13 @@ const (
 	OsuStatusOsuDirect    uint8 = 13
 )
 
+type OsuGameMode uint8
+
 const (
-	OsuGamemodeOsu   uint8 = 0
-	OsuGamemodeTaiko uint8 = 1
-	OsuGamemodeCatch uint8 = 2
-	OsuGamemodeMania uint8 = 3
+	OsuGamemodeOsu   OsuGameMode = 0
+	OsuGamemodeTaiko OsuGameMode = 1
+	OsuGamemodeCatch OsuGameMode = 2
+	OsuGamemodeMania OsuGameMode = 3
 )
 
 const (

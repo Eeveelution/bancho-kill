@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bancho-kill/packets"
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
@@ -9,24 +10,24 @@ import (
 	"net/http"
 )
 
-func (client *OsuClient) Login(username string, password string, timezone int, displayCity bool, blockingNonFriendPms bool, clientHash string) *OsuClient {
-	version := fmt.Sprintf("b%d", client.ClientVersion)
+func (client *OsuClient) Login(loginInfo packets.InitialLoginInformation) *OsuClient {
+	version := fmt.Sprintf("b%d", client.clientVersion)
 
 	displayCityAsInt := "0"
 
-	if displayCity {
+	if loginInfo.ShowCity {
 		displayCityAsInt = "1"
 	}
 
-	passwordHashed := md5.Sum([]byte(password))
+	passwordHashed := md5.Sum([]byte(loginInfo.Password))
 	passwordHashedString := hex.EncodeToString(passwordHashed[:])
 
-	loginStr := fmt.Sprintf("%s\n%s\n%s|%d|%s|%s", username, passwordHashedString, version, timezone, displayCityAsInt, clientHash)
+	loginStr := fmt.Sprintf("%s\n%s\n%s|%d|%s|%s", loginInfo.Username, passwordHashedString, version, loginInfo.Timezone, displayCityAsInt, loginInfo.GetLoginClientHash(client.clientVersion))
 
-	if client.ClientVersion >= 20130303 {
+	if client.clientVersion >= 20130303 {
 		friendPmsAsInt := "0"
 
-		if blockingNonFriendPms {
+		if loginInfo.BlockFriendPms {
 			friendPmsAsInt = "1"
 		}
 
