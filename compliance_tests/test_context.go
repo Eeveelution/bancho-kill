@@ -6,11 +6,11 @@ import (
 )
 
 type TestContext struct {
-	CurrentTestNumber int
-	ServerAddress     string
-	OsuClientKind     client.ClientKind
-	OsuClientVersion  int
-	PacketMiddleware  middleware.Middleware
+	CurrentTestNumber    int
+	ServerAddress        string
+	OsuClientKind        client.ClientKind
+	OsuClientVersion     int
+	PacketRecvMiddleware middleware.PacketMiddleware
 
 	Username string
 	Password string

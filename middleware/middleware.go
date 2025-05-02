@@ -1,5 +1,11 @@
 package middleware
 
-type Middleware interface {
-	Process(data []byte)
+import "bancho-kill/packets"
+
+type PacketMiddleware interface {
+	Process(packet packets.BanchoPacket) packets.BanchoPacket
+}
+
+type DataMiddleware interface {
+	Process(data []byte) []byte
 }

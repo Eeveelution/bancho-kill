@@ -5,9 +5,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
-	"strings"
 )
 
 func (client *OsuClient) Login(username string, password string, timezone int, displayCity bool, blockingNonFriendPms bool, clientHash string) *OsuClient {
@@ -23,8 +22,6 @@ func (client *OsuClient) Login(username string, password string, timezone int, d
 	passwordHashedString := hex.EncodeToString(passwordHashed[:])
 
 	loginStr := fmt.Sprintf("%s\n%s\n%s|%d|%s|%s", username, passwordHashedString, version, timezone, displayCityAsInt, clientHash)
-
-	fmt.Printf("len: %d", len(strings.Split(loginStr, "\n")))
 
 	if client.ClientVersion >= 20130303 {
 		friendPmsAsInt := "0"
@@ -54,12 +51,18 @@ func (client *OsuClient) Login(username string, password string, timezone int, d
 
 		resp, err := httpClient.Do(req)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil
+		}
+
+		body, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			return nil
+		}
 
 		client.banchoToken = resp.Header.Get("cho-token")
-
-		fmt.Printf("cho token: %s\n", client.banchoToken)
-		fmt.Printf("data: %s\n", hex.EncodeToString(body))
+		client.ReceiveData(body)
 	}
 
 	return client

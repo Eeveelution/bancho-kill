@@ -2,6 +2,7 @@ package client
 
 import (
 	"bancho-kill/middleware"
+	"bancho-kill/packets"
 	"net"
 )
 
@@ -18,12 +19,15 @@ type OsuClient struct {
 	serverAddr  string
 	kind        ClientKind
 
-	PacketMiddleware []middleware.Middleware
-	DataMiddleware   []middleware.Middleware
+	PacketReaderMiddleware middleware.PacketMiddleware
+	PacketMiddleware       []middleware.PacketMiddleware
+	DataMiddleware         []middleware.DataMiddleware
 
 	ClientVersion       int
-	PacketIncomingQueue chan []byte
+	PacketIncomingQueue chan packets.BanchoPacket
 	PacketOutgoingQueue chan []byte
+
+	KillSignal chan struct{}
 }
 
 func CreateTcpOsuClient(addr string, version int) (client *OsuClient, err error) {
@@ -44,8 +48,8 @@ func CreateTcpOsuClient(addr string, version int) (client *OsuClient, err error)
 		serverAddr:          addr,
 		kind:                ClientKindTcp,
 		ClientVersion:       version,
-		PacketIncomingQueue: make(chan []byte),
-		PacketOutgoingQueue: make(chan []byte),
+		PacketIncomingQueue: make(chan packets.BanchoPacket, 128),
+		PacketOutgoingQueue: make(chan []byte, 128),
 	}, nil
 }
 
@@ -55,8 +59,8 @@ func CreateHttpOsuClient(addr string, version int) (client *OsuClient, err error
 		serverAddr:          addr,
 		kind:                ClientKindHttp,
 		ClientVersion:       version,
-		PacketIncomingQueue: make(chan []byte),
-		PacketOutgoingQueue: make(chan []byte),
+		PacketIncomingQueue: make(chan packets.BanchoPacket, 128),
+		PacketOutgoingQueue: make(chan []byte, 128),
 	}, nil
 }
 
