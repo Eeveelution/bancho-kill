@@ -6,6 +6,7 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 const (
@@ -93,6 +94,29 @@ const (
 	BanchoUserPresence             uint16 = 83
 	OsuUserStatsRequest            uint16 = 85
 	BanchoRestart                  uint16 = 86
+	OsuInvite                      uint16 = 87
+	BanchoInvite                   uint16 = 88
+	BanchoChannelInfoComplete      uint16 = 89
+	OsuMatchChangePassword         uint16 = 90
+	BanchoMatchChangePassword      uint16 = 91
+	BanchoSilenceInfo              uint16 = 92
+	OsuTournamentMatchInfo         uint16 = 93
+	BanchoUserSilenced             uint16 = 94
+	BanchoUserPresenceSingle       uint16 = 95
+	BanchoUserPresenceBundle       uint16 = 96
+	OsuPresenceRequest             uint16 = 97
+	OsuPresenceRequestAll          uint16 = 98
+	OsuChangeFriendOnlyDms         uint16 = 99
+	BanchoUserDmsBlocked           uint16 = 100
+	BanchoTargetIsSilenced         uint16 = 101
+	BanchoVersionUpdateForced      uint16 = 102
+	BanchoSwitchServer             uint16 = 103
+	BanchoAccountRestricted        uint16 = 104
+	BanchoRTX                      uint16 = 105
+	BanchoMatchAbort               uint16 = 106
+	BanchoSwitchTournamentServer   uint16 = 107
+	OsuTournamentJoinMatchChannel  uint16 = 108
+	OsuTournamentLeaveMatchChannel uint16 = 109
 
 	BanchoHeaderSize int32 = 7
 )
@@ -165,7 +189,7 @@ func ReadBanchoPacketHeader(packetBuffer *bytes.Buffer) (int, BanchoPacket, bool
 	binary.Read(packetBuffer, binary.LittleEndian, &packet.PacketCompression)
 	binary.Read(packetBuffer, binary.LittleEndian, &packet.PacketSize)
 
-	if packet.PacketSize >= 32768 || packet.PacketSize < 0 || packet.PacketId > 86 {
+	if packet.PacketSize >= 32768 || packet.PacketSize < 0 {
 		packet.PacketId = InvalidPacket
 		return int(BanchoHeaderSize), packet, true
 	}
@@ -345,6 +369,52 @@ func GetPacketName(packetId uint16) string {
 		return "OsuUserStatsRequest"
 	case BanchoRestart:
 		return "BanchoRestart"
+	case OsuInvite:
+		return "OsuInvite"
+	case BanchoInvite:
+		return "BanchoInvite"
+	case BanchoChannelInfoComplete:
+		return "BanchoChannelInfoComplete"
+	case OsuMatchChangePassword:
+		return "OsuMatchChangePassword"
+	case BanchoMatchChangePassword:
+		return "BanchoMatchChangePassword"
+	case BanchoSilenceInfo:
+		return "BanchoSilenceInfo"
+	case OsuTournamentMatchInfo:
+		return "OsuTournamentMatchInfo"
+	case BanchoUserSilenced:
+		return "BanchoUserSilenced"
+	case BanchoUserPresenceSingle:
+		return "BanchoUserPresenceSingle"
+	case BanchoUserPresenceBundle:
+		return "BanchoUserPresenceBundle"
+	case OsuPresenceRequest:
+		return "OsuPresenceRequest"
+	case OsuPresenceRequestAll:
+		return "OsuPresenceRequestAll"
+	case OsuChangeFriendOnlyDms:
+		return "OsuChangeFriendOnlyDms"
+	case BanchoUserDmsBlocked:
+		return "BanchoUserDmsBlocked"
+	case BanchoTargetIsSilenced:
+		return "BanchoTargetIsSilenced"
+	case BanchoVersionUpdateForced:
+		return "BanchoVersionUpdateForced"
+	case BanchoSwitchServer:
+		return "BanchoSwitchServer"
+	case BanchoAccountRestricted:
+		return "BanchoAccountRestricted"
+	case BanchoRTX:
+		return "BanchoRTX"
+	case BanchoMatchAbort:
+		return "BanchoMatchAbort"
+	case BanchoSwitchTournamentServer:
+		return "BanchoSwitchTournamentServer"
+	case OsuTournamentJoinMatchChannel:
+		return "OsuTournamentJoinMatchChannel"
+	case OsuTournamentLeaveMatchChannel:
+		return "OsuTournamentLeaveMatchChannel"
 	}
-	return ""
+	return fmt.Sprintf("Packet ID %d", packetId)
 }
