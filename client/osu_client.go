@@ -13,17 +13,20 @@ const (
 )
 
 type OsuClient struct {
-	conn       *net.TCPConn
-	serverAddr string
-	kind       ClientKind
+	conn        *net.TCPConn
+	banchoToken string
+	serverAddr  string
+	kind        ClientKind
 
 	PacketMiddleware []middleware.Middleware
 	DataMiddleware   []middleware.Middleware
 
-	PacketQueue chan []byte
+	ClientVersion       int
+	PacketIncomingQueue chan []byte
+	PacketOutgoingQueue chan []byte
 }
 
-func CreateTcpOsuClient(addr string) (client *OsuClient, err error) {
+func CreateTcpOsuClient(addr string, version int) (client *OsuClient, err error) {
 	resolvedAddr, err := net.ResolveTCPAddr("tcp", addr)
 
 	if err != nil {
@@ -37,26 +40,30 @@ func CreateTcpOsuClient(addr string) (client *OsuClient, err error) {
 	}
 
 	return &OsuClient{
-		conn:        conn,
-		serverAddr:  addr,
-		kind:        ClientKindTcp,
-		PacketQueue: make(chan []byte),
+		conn:                conn,
+		serverAddr:          addr,
+		kind:                ClientKindTcp,
+		ClientVersion:       version,
+		PacketIncomingQueue: make(chan []byte),
+		PacketOutgoingQueue: make(chan []byte),
 	}, nil
 }
 
-func CreateHttpOsuClient(addr string) (client *OsuClient, err error) {
+func CreateHttpOsuClient(addr string, version int) (client *OsuClient, err error) {
 	return &OsuClient{
-		conn:        nil,
-		serverAddr:  addr,
-		kind:        ClientKindHttp,
-		PacketQueue: make(chan []byte),
+		conn:                nil,
+		serverAddr:          addr,
+		kind:                ClientKindHttp,
+		ClientVersion:       version,
+		PacketIncomingQueue: make(chan []byte),
+		PacketOutgoingQueue: make(chan []byte),
 	}, nil
 }
 
-func CreateOsuClient(kind ClientKind, addr string) (*OsuClient, error) {
+func CreateOsuClient(kind ClientKind, version int, addr string) (*OsuClient, error) {
 	if kind == ClientKindTcp {
-		return CreateTcpOsuClient(addr)
+		return CreateTcpOsuClient(addr, version)
 	} else {
-		return CreateHttpOsuClient(addr)
+		return CreateHttpOsuClient(addr, version)
 	}
 }

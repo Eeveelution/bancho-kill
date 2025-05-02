@@ -1,6 +1,7 @@
-package banchokill
+package main
 
 import (
+	"bancho-kill/compliance_tests"
 	"fmt"
 	"os"
 )
@@ -8,7 +9,5 @@ import (
 func main() {
 	fmt.Println(len(os.Args))
 
-	if len(os.Args) > 2 {
-
-	}
+	compliance_tests.RunAllComplianceTests("http://c.staging.titanic.sh")
 }

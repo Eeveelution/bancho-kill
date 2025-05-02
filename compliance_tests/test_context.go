@@ -9,7 +9,11 @@ type TestContext struct {
 	CurrentTestNumber int
 	ServerAddress     string
 	OsuClientKind     client.ClientKind
+	OsuClientVersion  int
 	PacketMiddleware  middleware.Middleware
+
+	Username string
+	Password string
 }
 
 func (ctx TestContext) Fail(err string) {
