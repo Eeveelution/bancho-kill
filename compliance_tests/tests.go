@@ -12,9 +12,32 @@ import (
 	"github.com/muesli/termenv"
 )
 
-var complianceTests map[string]func(*TestContext, *client.OsuClient) = map[string]func(*TestContext, *client.OsuClient){
-	"1.0 - Testing a basic osu! Login":     TestSuccessfulOsuLogin,
-	"1.1 - Testing a incorrect osu! Login": TestLoginFailure,
+type TestFunction func(*TestContext, *client.OsuClient)
+
+type Test struct {
+	TestName     string
+	TestFunction TestFunction
+}
+
+type TestGrouping struct {
+	GroupName string
+	Tests     []Test
+}
+
+var complianceTests []TestGrouping = []TestGrouping{
+	TestGrouping{
+		GroupName: "osu! Login Tests",
+		Tests: []Test{
+			Test{
+				TestName:     "Basic login until a \"Welcome to Bancho!\" should appear on the client.",
+				TestFunction: TestSuccessfulOsuLogin,
+			},
+			Test{
+				TestName:     "Testing a invalid login.",
+				TestFunction: TestLoginFailure,
+			},
+		},
+	},
 }
 
 func RunAllComplianceTests(addr string) {
@@ -64,68 +87,72 @@ func RunAllComplianceTests(addr string) {
 	createdClient.PacketReaderMiddleware = context.PacketRecvMiddleware
 
 	output := termenv.NewOutput(os.Stdout)
-	defaultColor := output.ForegroundColor()
 
-	for testName, test := range complianceTests {
-		context.CurrentTestNumber++
-		context.CurrentTestName = testName
+	for groupIndex, group := range complianceTests {
+		fmt.Printf("======== Beginning Test Group: %s\n", group.GroupName)
 
-		output.SetForegroundColor(defaultColor)
-		fmt.Printf("[ RUNNING ] %s", testName)
+		for testIndex, test := range group.Tests {
+			testIndex := fmt.Sprintf("%d.%d", groupIndex+1, testIndex+1)
+			indiciesAndtestName := fmt.Sprintf("%s - %s", testIndex, test.TestName)
 
-		testStart := time.Now()
+			context.CurrentTestName = testIndex
 
-		test(&context, createdClient)
+			fmt.Printf("[ RUNNING ] %s - %s", testIndex, test.TestName)
 
-		elapsed := time.Since(testStart)
+			testStart := time.Now()
 
-		warningsForCurrentTest := context.Warnings[testName]
+			test.TestFunction(&context, createdClient)
 
-		if len(warningsForCurrentTest) == 0 {
-			output.ClearLine()
+			elapsed := time.Since(testStart)
 
-			fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("PASS").Foreground(termenv.ANSIGreen), elapsed.Milliseconds(), testName)
-		} else {
-			output.ClearLine()
+			warningsForCurrentTest := context.Warnings[testIndex]
 
-			hasError := false
+			if len(warningsForCurrentTest) == 0 {
+				output.ClearLine()
 
-			for _, warning := range warningsForCurrentTest {
-				if warning.IsError {
-					hasError = true
-					break
-				}
-			}
-
-			if hasError {
-				fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("FAIL").Foreground(termenv.ANSIRed), elapsed.Milliseconds(), testName)
+				fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("PASS").Foreground(termenv.ANSIGreen), elapsed.Milliseconds(), indiciesAndtestName)
 			} else {
-				fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("WARN").Foreground(termenv.ANSIYellow), elapsed.Milliseconds(), testName)
-			}
+				output.ClearLine()
 
-			for _, warning := range warningsForCurrentTest {
-				line := ""
+				hasError := false
 
-				if warning.IsError {
-					line += "- !!!! - "
+				for _, warning := range warningsForCurrentTest {
+					if warning.IsError {
+						hasError = true
+						break
+					}
+				}
+
+				if hasError {
+					fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("FAIL").Foreground(termenv.ANSIRed), elapsed.Milliseconds(), indiciesAndtestName)
 				} else {
-					line += "- ~~~~ - "
+					fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("WARN").Foreground(termenv.ANSIYellow), elapsed.Milliseconds(), indiciesAndtestName)
 				}
 
-				if warning.Error != nil {
-					line += warning.Error.Error() + " "
-				}
+				for _, warning := range warningsForCurrentTest {
+					line := ""
 
-				if warning.Description != "" {
-					line += warning.Description
-				}
+					if warning.IsError {
+						line += "- !!!! - "
+					} else {
+						line += "- ~~~~ - "
+					}
 
-				line += "\n"
+					if warning.Error != nil {
+						line += warning.Error.Error() + " "
+					}
 
-				if warning.IsError {
-					fmt.Printf("%s", termenv.String(line).Foreground(termenv.ANSIRed))
-				} else {
-					fmt.Printf("%s", termenv.String(line).Foreground(termenv.ANSIYellow))
+					if warning.Description != "" {
+						line += warning.Description
+					}
+
+					line += "\n"
+
+					if warning.IsError {
+						fmt.Printf("%s", termenv.String(line).Foreground(termenv.ANSIRed))
+					} else {
+						fmt.Printf("%s", termenv.String(line).Foreground(termenv.ANSIYellow))
+					}
 				}
 			}
 		}
