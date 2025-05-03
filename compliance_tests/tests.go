@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/muesli/termenv"
 )
 
 var complianceTests map[string]func(*TestContext, *client.OsuClient) = map[string]func(*TestContext, *client.OsuClient){
@@ -61,12 +63,14 @@ func RunAllComplianceTests(addr string) {
 
 	createdClient.PacketReaderMiddleware = context.PacketRecvMiddleware
 
-	fmt.Print("\033[s")
+	output := termenv.NewOutput(os.Stdout)
+	defaultColor := output.ForegroundColor()
 
 	for testName, test := range complianceTests {
 		context.CurrentTestNumber++
 		context.CurrentTestName = testName
 
+		output.SetForegroundColor(defaultColor)
 		fmt.Printf("[ RUNNING ] %s", testName)
 
 		testStart := time.Now()
@@ -78,8 +82,12 @@ func RunAllComplianceTests(addr string) {
 		warningsForCurrentTest := context.Warnings[testName]
 
 		if len(warningsForCurrentTest) == 0 {
-			fmt.Printf("\033[2K\r[ PASS ] (%dms) %s\n", elapsed.Milliseconds(), testName)
+			output.ClearLine()
+
+			fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("PASS").Foreground(termenv.ANSIGreen), elapsed.Milliseconds(), testName)
 		} else {
+			output.ClearLine()
+
 			hasError := false
 
 			for _, warning := range warningsForCurrentTest {
@@ -90,27 +98,35 @@ func RunAllComplianceTests(addr string) {
 			}
 
 			if hasError {
-				fmt.Printf("\033[2K\r[ FAIL ] (%dms) %s\n", elapsed.Milliseconds(), testName)
+				fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("FAIL").Foreground(termenv.ANSIRed), elapsed.Milliseconds(), testName)
 			} else {
-				fmt.Printf("\033[2K\r[ WARN ] (%dms) %s\n", elapsed.Milliseconds(), testName)
+				fmt.Printf("\r[ %s ] (%dms) %s\n", termenv.String("WARN").Foreground(termenv.ANSIYellow), elapsed.Milliseconds(), testName)
 			}
 
 			for _, warning := range warningsForCurrentTest {
+				line := ""
+
 				if warning.IsError {
-					fmt.Printf("- !!!! - ")
+					line += "- !!!! - "
 				} else {
-					fmt.Printf("- ~~~~ - ")
+					line += "- ~~~~ - "
 				}
 
 				if warning.Error != nil {
-					fmt.Printf("%s", warning.Error.Error())
+					line += warning.Error.Error() + " "
 				}
 
 				if warning.Description != "" {
-					fmt.Printf("%s", warning.Description)
+					line += warning.Description
 				}
 
-				fmt.Printf("\n")
+				line += "\n"
+
+				if warning.IsError {
+					fmt.Printf("%s", termenv.String(line).Foreground(termenv.ANSIRed))
+				} else {
+					fmt.Printf("%s", termenv.String(line).Foreground(termenv.ANSIYellow))
+				}
 			}
 		}
 	}
