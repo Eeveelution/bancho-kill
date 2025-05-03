@@ -25,14 +25,14 @@ type TestGrouping struct {
 }
 
 var complianceTests []TestGrouping = []TestGrouping{
-	TestGrouping{
+	{
 		GroupName: "osu! Login Tests",
 		Tests: []Test{
-			Test{
+			{
 				TestName:     "Basic login until a \"Welcome to Bancho!\" should appear on the client.",
 				TestFunction: TestSuccessfulOsuLogin,
 			},
-			Test{
+			{
 				TestName:     "Testing a invalid login.",
 				TestFunction: TestLoginFailure,
 			},
@@ -59,7 +59,7 @@ func RunAllComplianceTests(addr string) {
 		CurrentTestNumber: 0,
 		ServerAddress:     addr,
 		OsuClientKind:     client.ClientKindHttp,
-		OsuClientVersion:  20130303,
+		OsuClientVersion:  20250306,
 		LoginInformation: packets.InitialLoginInformation{
 			Username:       username,
 			Password:       password,
@@ -72,7 +72,7 @@ func RunAllComplianceTests(addr string) {
 			UninstallId:    "4cfdc2e157eefe6facb983b1d557b3a1", //TODO: figure out how to make these not dummies
 			DiskSignature:  "4cfdc2e157eefe6facb983b1d557b3a1",
 		},
-		PacketRecvMiddleware: packet_recv_middleware.ReceiverMiddleware_b20130303{},
+		PacketRecvMiddleware: packet_recv_middleware.ReceiverMiddleware_b20250306{},
 		TotalFails:           0,
 		TotalWarnings:        0,
 		Warnings:             map[string][]WarningOrError{},

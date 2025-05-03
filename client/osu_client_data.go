@@ -45,14 +45,15 @@ type FriendEntry struct {
 }
 
 type UserStats struct {
-	UserID         uint64
-	Mode           uint8
-	Rank           uint64
+	UserID         int32
+	Mode           packets.OsuGameMode
+	Rank           uint32
 	RankedScore    uint64
 	TotalScore     uint64
+	Performance    uint16
 	Level          float64
 	Accuracy       float32
-	Playcount      uint64
+	Playcount      uint32
 	CountSSH       uint64
 	CountSS        uint64
 	CountSH        uint64

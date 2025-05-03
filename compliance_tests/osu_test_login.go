@@ -3,11 +3,16 @@ package compliance_tests
 import (
 	"bancho-kill/client"
 	"bancho-kill/packets"
+	"context"
 	"strings"
 	"time"
 )
 
 func TestSuccessfulOsuLogin(ctx *TestContext, testClient *client.OsuClient) {
+	maintainCtx, cancelMaintain := context.WithCancel(context.Background())
+
+	go testClient.MaintainClient(maintainCtx)
+
 	testClient.
 		Login(ctx.LoginInformation).
 		Wait(500*time.Millisecond).
@@ -29,6 +34,10 @@ func TestSuccessfulOsuLogin(ctx *TestContext, testClient *client.OsuClient) {
 		AssertJoinedChatChannel("osu").
 		WarnIfPacketNotReceivedAboveVersions(425, packets.BanchoLoginPermissions, "Should have received a BanchoLoginPermissions above b425 to let the client know it's status.").
 		WarnIfPacketNotReceivedAboveVersions(535, packets.BanchoTitleUpdate, "osu!bancho does send a BanchoTitleUpdate on login, to make sure the clients Image is fully refreshed.")
+
+	time.Sleep(time.Second)
+
+	cancelMaintain()
 }
 
 func TestLoginFailure(ctx *TestContext, testClient *client.OsuClient) {
@@ -36,7 +45,7 @@ func TestLoginFailure(ctx *TestContext, testClient *client.OsuClient) {
 	copiedLoginInfo.Password += "this is a incorrect password!"
 
 	testClient.
-		Login(ctx.LoginInformation).
+		Login(copiedLoginInfo).
 		Wait(500*time.Millisecond).
 		Assert("Login should have failed.", func(oc client.OsuClient) bool {
 			return oc.OwnUserData.UserID <= 0

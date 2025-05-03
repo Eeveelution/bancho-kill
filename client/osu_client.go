@@ -15,12 +15,13 @@ const (
 )
 
 type OsuClient struct {
-	conn          *net.TCPConn
-	banchoToken   string
-	serverAddr    string
-	tcpAddr       *net.TCPAddr
-	kind          ClientKind
-	clientVersion int
+	conn            *net.TCPConn
+	banchoToken     string
+	serverAddr      string
+	tcpAddr         *net.TCPAddr
+	kind            ClientKind
+	clientVersion   int
+	continueRunning bool
 
 	PacketReaderMiddleware middleware.PacketMiddleware
 	PacketMiddleware       []middleware.PacketMiddleware
@@ -37,7 +38,8 @@ type OsuClient struct {
 	TestFailFunc func(string)
 	TestWarnFunc func(string)
 
-	OwnUserData    UserData
-	PresentUsers   []UserData
-	JoinedChannels []ChatChannel
+	OwnUserData           UserData
+	PresentUsers          []UserData
+	JoinedChannels        []ChatChannel
+	BanchoProtocolVersion int32
 }

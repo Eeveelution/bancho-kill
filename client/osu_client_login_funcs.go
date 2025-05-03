@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"time"
 )
 
 func (client *OsuClient) Login(loginInfo packets.InitialLoginInformation) *OsuClient {
@@ -72,6 +73,14 @@ func (client *OsuClient) Login(loginInfo packets.InitialLoginInformation) *OsuCl
 		client.banchoToken = resp.Header.Get("cho-token")
 		client.ReceiveData(body)
 	}
+
+	return client
+}
+
+func (client *OsuClient) Kill(timeout time.Duration) *OsuClient {
+	time.Sleep(timeout)
+
+	client.KillSignal <- struct{}{}
 
 	return client
 }
