@@ -4,7 +4,6 @@ import (
 	"bancho-kill/packets"
 	"bytes"
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -44,8 +43,6 @@ func (client *OsuClient) ReceiveData(data []byte) {
 
 		client.PacketIncomingQueue <- crossVersionPacket
 		client.PacketHistory = append(client.PacketHistory, crossVersionPacket)
-
-		fmt.Printf("%s\n", packets.GetPacketName(readPacket.PacketId))
 	}
 }
 

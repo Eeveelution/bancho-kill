@@ -12,19 +12,15 @@ func CreateTcpOsuClient(addr string, version int, failFunc func(string), warnFun
 		return nil, err
 	}
 
-	conn, err := net.DialTCP("tcp", nil, resolvedAddr)
-
-	if err != nil {
-		return nil, err
-	}
-
 	return &OsuClient{
-		conn:                conn,
+		tcpAddr:             resolvedAddr,
 		serverAddr:          addr,
 		kind:                ClientKindTcp,
 		clientVersion:       version,
 		PacketIncomingQueue: make(chan packets.BanchoPacket, 128),
 		PacketOutgoingQueue: make(chan []byte, 128),
+		TestFailFunc:        failFunc,
+		TestWarnFunc:        warnFunc,
 	}, nil
 }
 
@@ -37,6 +33,8 @@ func CreateHttpOsuClient(addr string, version int, failFunc func(string), warnFu
 		PacketIncomingQueue: make(chan packets.BanchoPacket, 128),
 		PacketOutgoingQueue: make(chan []byte, 128),
 		PacketPollRate:      500,
+		TestFailFunc:        failFunc,
+		TestWarnFunc:        warnFunc,
 	}, nil
 }
 

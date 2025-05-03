@@ -18,6 +18,7 @@ type OsuClient struct {
 	conn          *net.TCPConn
 	banchoToken   string
 	serverAddr    string
+	tcpAddr       *net.TCPAddr
 	kind          ClientKind
 	clientVersion int
 

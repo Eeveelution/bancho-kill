@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 )
 
@@ -37,7 +38,13 @@ func (client *OsuClient) Login(loginInfo packets.InitialLoginInformation) *OsuCl
 	}
 
 	if client.kind == ClientKindTcp {
+		conn, err := net.DialTCP("tcp", nil, client.tcpAddr)
 
+		if err != nil {
+			return nil
+		}
+
+		client.conn = conn
 	} else {
 		httpClient := &http.Client{}
 

@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
-var complianceTests map[string]func(*TestContext) = map[string]func(*TestContext){
-	"1 - Testing a basic osu! Login": TestOsuLogin,
+var complianceTests map[string]func(*TestContext, *client.OsuClient) = map[string]func(*TestContext, *client.OsuClient){
+	"1.0 - Testing a basic osu! Login":     TestSuccessfulOsuLogin,
+	"1.1 - Testing a incorrect osu! Login": TestLoginFailure,
 }
 
 func RunAllComplianceTests(addr string) {
@@ -46,7 +48,70 @@ func RunAllComplianceTests(addr string) {
 			DiskSignature:  "4cfdc2e157eefe6facb983b1d557b3a1",
 		},
 		PacketRecvMiddleware: packet_recv_middleware.ReceiverMiddleware_b20130303{},
+		TotalFails:           0,
+		TotalWarnings:        0,
+		Warnings:             map[string][]WarningOrError{},
 	}
 
-	TestOsuLogin(&context)
+	createdClient, err := client.CreateOsuClient(context.OsuClientKind, context.OsuClientVersion, context.ServerAddress, context.Fail, context.Warn)
+
+	if err != nil {
+		context.FailWithErrorAndMessage("Failed to create client.", err)
+	}
+
+	createdClient.PacketReaderMiddleware = context.PacketRecvMiddleware
+
+	fmt.Print("\033[s")
+
+	for testName, test := range complianceTests {
+		context.CurrentTestNumber++
+		context.CurrentTestName = testName
+
+		fmt.Printf("[ RUNNING ] %s", testName)
+
+		testStart := time.Now()
+
+		test(&context, createdClient)
+
+		elapsed := time.Since(testStart)
+
+		warningsForCurrentTest := context.Warnings[testName]
+
+		if len(warningsForCurrentTest) == 0 {
+			fmt.Printf("\033[2K\r[ PASS ]    (%dms) %s\n", elapsed.Milliseconds(), testName)
+		} else {
+			hasError := false
+
+			for _, warning := range warningsForCurrentTest {
+				if warning.IsError {
+					hasError = true
+					break
+				}
+			}
+
+			if hasError {
+				fmt.Printf("\033[2K\r[ FAIL ]    (%dms) %s\n", elapsed.Milliseconds(), testName)
+			} else {
+				fmt.Printf("\033[2K\r[ WARN ]    (%dms) %s\n", elapsed.Milliseconds(), testName)
+			}
+
+			for _, warning := range warningsForCurrentTest {
+				if warning.IsError {
+					fmt.Printf("- !!!!      ")
+				} else {
+					fmt.Printf("- ~~~~      ")
+				}
+
+				if warning.Error != nil {
+					fmt.Printf("%s", warning.Error.Error())
+				}
+
+				if warning.Description != "" {
+					fmt.Printf("%s", warning.Description)
+				}
+
+				fmt.Printf("\n")
+			}
+		}
+	}
 }
