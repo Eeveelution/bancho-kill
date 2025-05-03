@@ -78,7 +78,7 @@ func RunAllComplianceTests(addr string) {
 		warningsForCurrentTest := context.Warnings[testName]
 
 		if len(warningsForCurrentTest) == 0 {
-			fmt.Printf("\033[2K\r[ PASS ]    (%dms) %s\n", elapsed.Milliseconds(), testName)
+			fmt.Printf("\033[2K\r[ PASS ] (%dms) %s\n", elapsed.Milliseconds(), testName)
 		} else {
 			hasError := false
 
@@ -90,16 +90,16 @@ func RunAllComplianceTests(addr string) {
 			}
 
 			if hasError {
-				fmt.Printf("\033[2K\r[ FAIL ]    (%dms) %s\n", elapsed.Milliseconds(), testName)
+				fmt.Printf("\033[2K\r[ FAIL ] (%dms) %s\n", elapsed.Milliseconds(), testName)
 			} else {
-				fmt.Printf("\033[2K\r[ WARN ]    (%dms) %s\n", elapsed.Milliseconds(), testName)
+				fmt.Printf("\033[2K\r[ WARN ] (%dms) %s\n", elapsed.Milliseconds(), testName)
 			}
 
 			for _, warning := range warningsForCurrentTest {
 				if warning.IsError {
-					fmt.Printf("- !!!!      ")
+					fmt.Printf("- !!!! - ")
 				} else {
-					fmt.Printf("- ~~~~      ")
+					fmt.Printf("- ~~~~ - ")
 				}
 
 				if warning.Error != nil {
