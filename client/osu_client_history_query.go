@@ -173,4 +173,5 @@ func (client *OsuClient) WarnIfDoesntKnow(username string, desc string) *OsuClie
 
 	client.TestWarnFunc(fmt.Sprintf("Expected to have Presence information on %s, none received. %s", username, desc))
 
+	return client
 }
